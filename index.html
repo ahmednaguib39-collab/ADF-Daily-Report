@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alfanar Projects — MV Grid Shift Report</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:14px;color:#1a1a2e;background:#eef2f7;min-height:100vh}
+.app{max-width:960px;margin:0 auto;padding:1rem 1rem 4rem}
+.header{background:#003366;border-radius:10px;padding:1.25rem 1.75rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;box-shadow:0 3px 10px rgba(0,51,102,0.25)}
+.header-titles h1{font-size:18px;font-weight:700;color:#fff}
+.header-titles p{font-size:12px;color:#90c4e8;margin-top:3px}
+.header-right{text-align:right}
+#live-time{font-size:22px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums}
+#live-date{font-size:11px;color:#90c4e8;margin-top:3px}
+.tabs{display:flex;margin-bottom:1.25rem;border-bottom:2px solid #c8d5e3;background:#fff;border-radius:10px 10px 0 0;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.tab{padding:11px 22px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:#6b7a8d;transition:all 0.15s;border-bottom:3px solid transparent;font-family:inherit}
+.tab:hover{background:#f0f4f8;color:#003366}
+.tab.active{color:#003366;border-bottom-color:#0077cc;background:#e8f4ff}
+.section{background:#fff;border:1px solid #dde3ec;border-radius:10px;padding:1.25rem 1.5rem;margin-bottom:1rem;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+.section-title{font-size:11px;font-weight:700;color:#003366;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:1rem;display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:2px solid #e4ecf5}
+.section-note{font-size:12px;color:#5a6a7a;margin-bottom:12px;line-height:1.6;padding:8px 12px;background:#f5f8fc;border-left:3px solid #0077cc;border-radius:0 6px 6px 0}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+.field{margin-bottom:12px}
+label{font-size:12px;color:#4a5568;display:block;margin-bottom:5px;font-weight:600}
+input,select,textarea{width:100%;padding:8px 11px;border:1.5px solid #c8d5e3;border-radius:7px;font-size:13px;background:#fff;color:#1a1a2e;font-family:inherit;outline:none;transition:border-color 0.15s}
+input:focus,select:focus,textarea:focus{border-color:#0077cc;box-shadow:0 0 0 3px rgba(0,119,204,0.1)}
+input[readonly]{background:#f0f4f8;color:#6b7a8d;cursor:default}
+textarea{resize:vertical;min-height:64px;line-height:1.5}
+.radio-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.rpill{display:flex;align-items:center;gap:6px;padding:7px 16px;border:1.5px solid #c8d5e3;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.15s;user-select:none;background:#fff;color:#4a5568}
+.rpill input[type=radio]{display:none}
+.rpill.sel-yes{background:#e6f9ee;border-color:#27ae60;color:#1a7a40}
+.rpill.sel-no{background:#fdecea;border-color:#e74c3c;color:#a93226}
+.rpill.sel-blue{background:#e8f4ff;border-color:#0077cc;color:#003366}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 18px;border:1.5px solid #c8d5e3;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:#1a1a2e;font-family:inherit;transition:all 0.15s}
+.btn:hover{background:#f0f4f8}
+.btn-primary{background:#0077cc;border-color:#0077cc;color:#fff}
+.btn-primary:hover{background:#005fa3}
+.btn-danger{color:#e74c3c;border-color:#e74c3c}
+.btn-danger:hover{background:#fdecea}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-green{background:#27ae60;border-color:#27ae60;color:#fff}
+.notice{background:#fff8e1;border:1px solid #f6c90e;color:#7d6000;border-radius:7px;padding:10px 14px;font-size:12px;margin-bottom:12px}
+.alert-success{background:#e6f9ee;border:1.5px solid #27ae60;color:#1a7a40;border-radius:8px;padding:12px 16px;margin-bottom:1rem;font-size:13px;font-weight:600}
+.alert-error{background:#fdecea;border:1.5px solid #e74c3c;color:#a93226;border-radius:8px;padding:12px 16px;margin-bottom:1rem;font-size:13px;font-weight:600}
+.fault-row,.alarm-row,.contractor-row{background:#f5f8fc;border:1px solid #dde3ec;border-radius:7px;padding:10px 12px;margin-bottom:8px;display:grid;gap:8px;align-items:end}
+.fault-row{grid-template-columns:2fr 1.5fr 1fr auto}
+.alarm-row{grid-template-columns:1.5fr 2fr 1fr 1fr auto}
+.contractor-row{grid-template-columns:1fr 1fr 1fr 1fr auto}
+.incomer-block,.loop-block{background:#f5f8fc;border:1px solid #dde3ec;border-radius:8px;padding:12px 14px}
+.incomer-block h4,.loop-block h4{font-size:13px;font-weight:700;color:#003366;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #dde3ec}
+.slot-header{font-size:10px;font-weight:700;color:#fff;text-align:center;padding:4px 2px;background:#003366;border-radius:4px;margin-bottom:5px}
+.att-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.att-table th{font-size:11px;font-weight:700;color:#fff;background:#003366;text-align:left;padding:8px 10px}
+.att-table td{padding:7px 10px;border-bottom:1px solid #e4ecf5;font-size:12px}
+.att-table tr:nth-child(even) td{background:#f5f8fc}
+.tag{display:inline-flex;align-items:center;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;border:1px solid}
+.tag-day{background:#fff8e1;color:#7d4f00;border-color:#f6c90e}
+.tag-night{background:#ede7f6;color:#311b92;border-color:#7e57c2}
+.tag-ok{background:#e6f9ee;color:#1a7a40;border-color:#27ae60}
+.tag-fault{background:#fdecea;color:#a93226;border-color:#e74c3c}
+.tag-staff{background:#e8f4ff;color:#003366;border-color:#0077cc}
+.tag-cont{background:#fff3e0;color:#7d4f00;border-color:#f39c12}
+.report-card{background:#fff;border:1px solid #dde3ec;border-radius:10px;padding:1rem 1.25rem;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+.report-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.report-detail{font-size:12px;color:#4a5568;line-height:1.9}
+.submit-bar{background:#003366;border-radius:10px;padding:1.25rem 1.5rem;margin-top:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.divider{border:none;border-top:1px solid #e4ecf5;margin:1rem 0}
+.empty-state{text-align:center;padding:3rem;color:#6b7a8d;font-size:13px}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.5);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:4px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:640px){.g2,.g3,.g4{grid-template-columns:1fr}.fault-row,.alarm-row,.contractor-row{grid-template-columns:1fr 1fr}}
+@media print{body{background:#fff}.tabs,.submit-bar,.btn,.no-print{display:none!important}.section{box-shadow:none;border:1px solid #ccc}.header{background:#003366!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="header">
+  <div class="header-titles">
+    <h1>&#9889; Alfanar Projects &mdash; MV Grid Shift Report</h1>
+    <p>Operation &amp; Maintenance | Medium Voltage Distribution Network</p>
+  </div>
+  <div class="header-right">
+    <div id="live-time">--:--:--</div>
+    <div id="live-date">Loading...</div>
+  </div>
+</div>
+
+<div id="banner-success" style="display:none" class="alert-success">&#10003; Section submitted successfully and saved to Google Sheet.</div>
+<div id="banner-error"   style="display:none" class="alert-error">&#10007; Submission failed. Data saved locally. Check internet and try again.</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('form')"    id="tab-form">&#128221; Submit My Section</button>
+  <button class="tab"        onclick="switchTab('history')" id="tab-history">&#128196; Reports (<span id="rpt-count">0</span>)</button>
+  <button class="tab"        onclick="switchTab('admin')"   id="tab-admin">&#9881; Admin</button>
+</div>
+
+<!-- ===== FORM ===== -->
+<div id="view-form">
+
+<div class="section">
+  <div class="section-title">&#128100; Step 1 &mdash; Identify Yourself</div>
+  <p class="section-note">Select your name first. File number and designation fill automatically. Then complete sections relevant to your role only.</p>
+  <div class="g3">
+    <div class="field"><label>Your Name *</label>
+      <select id="self-name" onchange="onNameSelect()"><option value="">-- Select your name --</option></select></div>
+    <div class="field"><label>File / Badge No.</label><input type="text" id="self-file" readonly placeholder="Auto-filled"></div>
+    <div class="field"><label>Designation</label><input type="text" id="self-desig" readonly placeholder="Auto-filled"></div>
+  </div>
+  <div class="g3">
+    <div class="field"><label>Shift Date *</label><input type="date" id="shift-date"></div>
+    <div class="field"><label>Shift Type *</label>
+      <select id="shift-type" onchange="rebuildReadings()">
+        <option value="">-- Select --</option>
+        <option value="Day">Day Shift (06:00 - 18:00)</option>
+        <option value="Night">Night Shift (18:00 - 06:00)</option>
+      </select></div>
+    <div class="field"><label>Weather</label>
+      <select id="weather">
+        <option>Clear</option><option>Dusty / Sandstorm</option>
+        <option>High Humidity</option><option>Extreme Heat</option>
+        <option>Overcast</option><option>Rainy</option>
+      </select></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">&#128205; Step 2 &mdash; Your Attendance</div>
+  <p class="section-note">Confirm your work location and shift. Your name is pre-filled. Contractors can be added below by the supervisor.</p>
+  <div class="notice">&#9432; Your attendance is recorded automatically when you submit. Verify location and shift below.</div>
+  <div class="g4">
+    <div class="field"><label>Name</label><input type="text" id="att-name" readonly placeholder="Auto-filled"></div>
+    <div class="field"><label>File No.</label><input type="text" id="att-file" readonly placeholder="Auto-filled"></div>
+    <div class="field"><label>Work Location *</label>
+      <select id="att-location">
+        <option value="">-- Select --</option>
+        <option>S36 Substation</option><option>S36A Substation</option>
+        <option>S47A Substation</option><option>S47D Substation</option>
+        <option>Gate 5 Substation</option>
+      </select></div>
+    <div class="field"><label>Shift *</label>
+      <select id="att-shift">
+        <option value="">-- Select --</option>
+        <option>Day Shift</option><option>Night Shift</option>
+      </select></div>
+  </div>
+  <div class="divider"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+    <p style="font-size:12px;color:#6b7a8d">Add contractors / non-staff present during this shift</p>
+    <button class="btn btn-sm" onclick="addContractor()">+ Add Contractor</button>
+  </div>
+  <div id="contractor-list" style="margin-top:10px"></div>
+</div>
+
+<div class="section">
+  <div class="section-title">&#128202; System Health <span style="font-weight:400;font-size:10px;color:#6b7a8d;margin-left:6px">(Shift Supervisor / Engineer in Charge)</span></div>
+  <div class="g2">
+    <div class="field"><label>Overall System Status</label>
+      <select id="sys-status">
+        <option>Healthy -- No Issues</option>
+        <option>Minor Alarms -- Under Monitoring</option>
+        <option>Active Fault -- Being Attended</option>
+        <option>Outage -- Section Isolated</option>
+      </select></div>
+    <div class="field"><label>Any Faults During Shift?</label>
+      <div class="radio-group">
+        <label class="rpill" id="fy"><input type="radio" name="r-fault" value="Yes" onchange="toggleSec('fault-sec',true,'fy','fn')"> &#9888; Yes</label>
+        <label class="rpill sel-yes" id="fn"><input type="radio" name="r-fault" value="No" onchange="toggleSec('fault-sec',false,'fy','fn')" checked> &#10003; No</label>
+      </div></div>
+  </div>
+  <div class="field"><label>General System Observations</label>
+    <textarea id="sys-notes" placeholder="Bay status, equipment behaviour, switching operations, anything notable..."></textarea></div>
+</div>
+
+<div class="section" id="fault-sec" style="display:none">
+  <div class="section-title" style="color:#c0392b">&#9888; Fault Log</div>
+  <div id="fault-list"></div>
+  <button class="btn btn-sm" onclick="addFault()">+ Add Fault</button>
+  <div class="field" style="margin-top:12px"><label>Actions Taken / Restoration Summary</label>
+    <textarea id="fault-actions" placeholder="Isolation steps, protection operations, authority notifications, restoration sequence..."></textarea></div>
+</div>
+
+<div class="section">
+  <div class="section-title">&#128276; Major Alarms <span style="font-weight:400;font-size:10px;color:#6b7a8d;margin-left:6px">(CCMS Operator / Control Room)</span></div>
+  <div class="field" style="margin-bottom:10px"><label>Any Major Alarms?</label>
+    <div class="radio-group">
+      <label class="rpill" id="ay"><input type="radio" name="r-alarm" value="Yes" onchange="toggleSec('alarm-sec',true,'ay','an')"> &#128276; Yes</label>
+      <label class="rpill sel-yes" id="an"><input type="radio" name="r-alarm" value="No" onchange="toggleSec('alarm-sec',false,'ay','an')" checked> &#10003; No</label>
+    </div></div>
+  <div id="alarm-sec" style="display:none">
+    <div id="alarm-list"></div>
+    <button class="btn btn-sm" onclick="addAlarm()">+ Add Alarm</button>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">&#128268; Utility Incomer Readings <span style="font-weight:400;font-size:10px;color:#6b7a8d;margin-left:6px">(CCMS Operator / Control Room)</span></div>
+  <div class="field" style="margin-bottom:14px"><label>Reading Interval</label>
+    <div class="radio-group">
+      <label class="rpill sel-blue" id="i2"><input type="radio" name="r-intv" value="2h" onchange="setIntv('2h')" checked> Every 2 Hours</label>
+      <label class="rpill"          id="i4"><input type="radio" name="r-intv" value="4h" onchange="setIntv('4h')"> Every 4 Hours</label>
+    </div></div>
+  <div class="g2" style="gap:14px">
+    <div class="incomer-block"><h4>&#128268; Incomer 1 &mdash; Utility A</h4><div id="inc1"></div></div>
+    <div class="incomer-block"><h4>&#128268; Incomer 2 &mdash; Utility B</h4><div id="inc2"></div></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">&#128260; Loop Load Readings <span style="font-weight:400;font-size:10px;color:#6b7a8d;margin-left:6px">(CCMS Operator / Control Room)</span></div>
+  <div class="g3" style="gap:10px">
+    <div class="loop-block"><h4>Loop 1</h4><div id="lp1"></div></div>
+    <div class="loop-block"><h4>Loop 2</h4><div id="lp2"></div></div>
+    <div class="loop-block"><h4>Loop 3</h4><div id="lp3"></div></div>
+  </div>
+  <div class="field" style="margin-top:12px"><label>Readings Notes / Abnormalities</label>
+    <textarea id="rdg-notes" placeholder="Voltage deviations, overload conditions, unusual patterns..."></textarea></div>
+</div>
+
+<div class="section">
+  <div class="section-title">&#128737; HSE Highlights <span style="font-weight:400;font-size:10px;color:#6b7a8d;margin-left:6px">(HSE Officer)</span></div>
+  <div class="g2">
+    <div class="field"><label>Toolbox Talk Conducted?</label>
+      <div class="radio-group">
+        <label class="rpill" id="ty"><input type="radio" name="r-tbt" value="Yes" onchange="setRpill('ty','tn','yes')"> &#128101; Yes</label>
+        <label class="rpill" id="tn"><input type="radio" name="r-tbt" value="No"  onchange="setRpill('ty','tn','no')" checked> &#10005; No</label>
+      </div></div>
+    <div class="field"><label>Toolbox Talk Topic</label>
+      <input type="text" id="tbt-topic" placeholder="e.g. Electrical Safety, Work Permit Procedure"></div>
+  </div>
+  <div class="divider"></div>
+  <div class="g2">
+    <div class="field"><label>Any Incident Reported?</label>
+      <div class="radio-group">
+        <label class="rpill" id="iy"><input type="radio" name="r-inc" value="Yes" onchange="setRpill('iy','in_','yes');showIncDetail()"> &#128680; Yes</label>
+        <label class="rpill sel-yes" id="in_"><input type="radio" name="r-inc" value="No" onchange="setRpill('iy','in_','no');showIncDetail()" checked> &#10003; No</label>
+      </div></div>
+    <div class="field"><label>Any Near Miss Reported?</label>
+      <div class="radio-group">
+        <label class="rpill" id="ny"><input type="radio" name="r-nm" value="Yes" onchange="setRpill('ny','nn','yes');showIncDetail()"> &#9888; Yes</label>
+        <label class="rpill sel-yes" id="nn"><input type="radio" name="r-nm" value="No" onchange="setRpill('ny','nn','no');showIncDetail()" checked> &#10003; No</label>
+      </div></div>
+  </div>
+  <div id="inc-detail-block" style="display:none" class="field"><label>Incident / Near Miss Description</label>
+    <textarea id="inc-detail" placeholder="What happened, location, equipment involved, actions taken, reported to whom..."></textarea></div>
+  <div class="g3">
+    <div class="field"><label>Safe Man-Hours (this shift)</label><input type="number" id="safe-mh" placeholder="e.g. 480" min="0"></div>
+    <div class="field"><label>Active Permits (PTW)</label><input type="number" id="ptw" placeholder="e.g. 3" min="0"></div>
+    <div class="field"><label>PPE Compliance</label>
+      <select id="ppe">
+        <option>100% -- Full Compliance</option>
+        <option>90-99% -- Minor Gap</option>
+        <option>Below 90% -- Action Required</option>
+      </select></div>
+  </div>
+  <div class="field"><label>Additional HSE Remarks</label>
+    <textarea id="hse-notes" placeholder="Safety observations, housekeeping, follow-up actions..."></textarea></div>
+</div>
+
+<div class="section">
+  <div class="section-title">&#128260; Shift Handover <span style="font-weight:400;font-size:10px;color:#6b7a8d;margin-left:6px">(Shift Supervisor -- end of shift)</span></div>
+  <div class="field"><label>Pending Items / Actions for Next Shift</label>
+    <textarea id="handover-notes" placeholder="Ongoing works, open permits, deferred maintenance, pending notifications..."></textarea></div>
+  <div class="field"><label>Handover Received By (Incoming Shift Engineer)</label>
+    <input type="text" id="handover-receiver" placeholder="Full name of incoming shift engineer"></div>
+</div>
+
+<div class="submit-bar">
+  <div>
+    <p style="font-size:14px;font-weight:700;color:#fff">Submit Your Section</p>
+    <p style="font-size:12px;color:#90c4e8;margin-top:2px">Your inputs will merge with other team members into the consolidated shift report.</p>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn" style="color:#fff;border-color:#90c4e8" onclick="resetForm()">&#8635; Reset</button>
+    <button class="btn btn-primary" id="submit-btn" onclick="submitSection()">&#10148; Submit My Section</button>
+  </div>
+</div>
+</div>
+
+<!-- ===== HISTORY ===== -->
+<div id="view-history" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px" class="no-print">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <input type="text" id="srch" placeholder="Search date, name, shift..." style="max-width:240px" oninput="renderHistory()">
+      <select id="flt-shift" onchange="renderHistory()" style="max-width:160px">
+        <option value="">All Shifts</option><option>Day</option><option>Night</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-sm btn-green" onclick="window.print()">&#128438; Print / PDF</button>
+      <button class="btn btn-sm" onclick="exportJSON()">&#128229; Export JSON</button>
+      <button class="btn btn-sm btn-danger" onclick="clearAll()">&#128465; Clear All</button>
+    </div>
+  </div>
+  <div id="history-list"></div>
+</div>
+
+<!-- ===== ADMIN ===== -->
+<div id="view-admin" style="display:none">
+  <div class="section">
+    <div class="section-title">&#9881; Google Sheet Connection</div>
+    <div class="field">
+      <label>Google Apps Script Web App URL</label>
+      <input type="text" id="cfg-url" placeholder="Paste your deployed Web App URL here..." onchange="saveConfig()">
+      <p style="font-size:11px;color:#6b7a8d;margin-top:5px">Deploy the provided Apps Script, then paste the Web App URL here. Saved in this browser only.</p>
+    </div>
+    <div id="cfg-status" style="font-size:12px;margin-top:6px"></div>
+  </div>
+  <div class="section">
+    <div class="section-title">&#128101; Staff Roster (19 Members)</div>
+    <table class="att-table">
+      <thead><tr><th>File No.</th><th>Name</th><th>Designation</th></tr></thead>
+      <tbody id="roster-tbody"></tbody>
+    </table>
+  </div>
+  <div class="section">
+    <div class="section-title">&#128205; Work Locations</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
+      <span class="tag tag-ok">S36 Substation</span>
+      <span class="tag tag-ok">S36A Substation</span>
+      <span class="tag tag-ok">S47A Substation</span>
+      <span class="tag tag-ok">S47D Substation</span>
+      <span class="tag tag-ok">Gate 5 Substation</span>
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+const ROSTER=[
+  {file:'45914',name:'Ahmed Naguib',desig:'Project Manager'},
+  {file:'83964',name:'Laraib Arejo',desig:'CCMS Operator'},
+  {file:'79641',name:'Imdad Arshad',desig:'CCMS Operator'},
+  {file:'80629',name:'Mariappan Jayaraman',desig:'Protection Engineer'},
+  {file:'HSE-001',name:'Muhammed Usman',desig:'HSE Officer'},
+  {file:'82724',name:'Imran Khan',desig:'Maintenance Engineer'},
+  {file:'78702',name:'Shah Nawaz Khan',desig:'Maintenance Engineer (SCADA)'},
+  {file:'92903',name:'Muhammad Danish',desig:'Maintenance Engineer (SCADA)'},
+  {file:'82034',name:'Muhammad Fazil',desig:'Protection Engineer'},
+  {file:'91111',name:'Sibi Kunjomon',desig:'Maintenance Engineer'},
+  {file:'91453',name:'Junaid Ali',desig:'CCMS Operator'},
+  {file:'91484',name:'Ans Mehmood',desig:'CCMS Operator'},
+  {file:'92711',name:'Maheshwaran',desig:'Technician'},
+  {file:'22157',name:'Asad Baig',desig:'Technician'},
+  {file:'21648',name:'Pasupathi',desig:'Technician'},
+  {file:'20539',name:'Wasi Ahmed',desig:'Technician'},
+  {file:'93044',name:'Prasanna Sankar',desig:'Protection Engineer'},
+  {file:'84038',name:'Sai Prasad Jayaprakash',desig:'Maintenance Engineer'},
+  {file:'69261',name:'Arshad Iqbal',desig:'Technician'}
+];
+const LOCS=['S36 Substation','S36A Substation','S47A Substation','S47D Substation','Gate 5 Substation'];
+const SK='alfanar_mv_v1', CK='alfanar_cfg_v1';
+let reports=[], intv='2h', fC=0, aC=0, cC=0;
+
+window.addEventListener('DOMContentLoaded',()=>{
+  try{reports=JSON.parse(localStorage.getItem(SK)||'[]');}catch(e){reports=[];}
+  document.getElementById('rpt-count').textContent=reports.length;
+  const cfg=JSON.parse(localStorage.getItem(CK)||'{}');
+  if(cfg.url) document.getElementById('cfg-url').value=cfg.url;
+  updateCfgStatus(cfg.url);
+  const sel=document.getElementById('self-name');
+  ROSTER.forEach(p=>{const o=document.createElement('option');o.value=p.file;o.textContent=p.name+' ('+p.desig+')';sel.appendChild(o);});
+  document.getElementById('shift-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('roster-tbody').innerHTML=ROSTER.map(p=>`<tr><td style="font-family:monospace;font-size:12px">${p.file}</td><td>${p.name}</td><td style="color:#6b7a8d">${p.desig}</td></tr>`).join('');
+  setInterval(()=>{
+    const n=new Date();
+    document.getElementById('live-time').textContent=n.toLocaleTimeString('en-SA',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    document.getElementById('live-date').textContent=n.toLocaleDateString('en-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  },1000);
+  rebuildReadings();
+});
+
+function switchTab(t){
+  ['form','history','admin'].forEach(x=>{
+    document.getElementById('view-'+x).style.display=x===t?'block':'none';
+    document.getElementById('tab-'+x).className='tab'+(x===t?' active':'');
+  });
+  if(t==='history') renderHistory();
+}
+function onNameSelect(){
+  const f=document.getElementById('self-name').value;
+  const p=ROSTER.find(r=>r.file===f);
+  document.getElementById('self-file').value=f||'';
+  document.getElementById('self-desig').value=p?p.desig:'';
+  document.getElementById('att-name').value=p?p.name:'';
+  document.getElementById('att-file').value=f||'';
+}
+function toggleSec(id,show,y,n){
+  document.getElementById(id).style.display=show?'block':'none';
+  document.getElementById(y).className='rpill'+(show?' sel-no':'');
+  document.getElementById(n).className='rpill'+(!show?' sel-yes':'');
+}
+function setRpill(y,n,v){
+  document.getElementById(y).className='rpill'+(v==='yes'?' sel-no':'');
+  document.getElementById(n).className='rpill'+(v==='no'?' sel-yes':'');
+}
+function showIncDetail(){
+  const inc=document.querySelector('input[name="r-inc"]:checked').value;
+  const nm=document.querySelector('input[name="r-nm"]:checked').value;
+  document.getElementById('inc-detail-block').style.display=(inc==='Yes'||nm==='Yes')?'block':'none';
+}
+function addFault(){
+  fC++;const id='fr'+fC;const d=document.createElement('div');d.className='fault-row';d.id=id;
+  d.innerHTML=`<div><label style="font-size:11px">Location / Feeder / Bay</label><input type="text" placeholder="e.g. Bay 04" data-r="f-loc"></div>
+  <div><label style="font-size:11px">Fault Type</label><select data-r="f-type"><option>Earth Fault</option><option>Short Circuit</option><option>Overcurrent</option><option>Voltage Fluctuation</option><option>Equipment Failure</option><option>Cable Fault</option><option>Protection Operation</option><option>Other</option></select></div>
+  <div><label style="font-size:11px">Time</label><input type="time" data-r="f-time"></div>
+  <div><button class="btn btn-sm btn-danger" onclick="document.getElementById('${id}').remove()">X</button></div>`;
+  document.getElementById('fault-list').appendChild(d);
+}
+function addAlarm(){
+  aC++;const id='ar'+aC;const d=document.createElement('div');d.className='alarm-row';d.id=id;
+  d.innerHTML=`<div><label style="font-size:11px">Equipment / Location</label><input type="text" placeholder="e.g. RMU-07" data-r="a-loc"></div>
+  <div><label style="font-size:11px">Alarm Description</label><input type="text" placeholder="e.g. Buchholz Gas" data-r="a-desc"></div>
+  <div><label style="font-size:11px">Severity</label><select data-r="a-sev"><option>Critical</option><option>Major</option><option>Minor</option></select></div>
+  <div><label style="font-size:11px">Time</label><input type="time" data-r="a-time"></div>
+  <div><button class="btn btn-sm btn-danger" onclick="document.getElementById('${id}').remove()">X</button></div>`;
+  document.getElementById('alarm-list').appendChild(d);
+}
+function addContractor(){
+  cC++;const id='cr'+cC;const d=document.createElement('div');d.className='contractor-row';d.id=id;
+  const lo=LOCS.map(l=>`<option>${l}</option>`).join('');
+  d.innerHTML=`<div><label style="font-size:11px">Full Name</label><input type="text" placeholder="Name" data-r="c-name"></div>
+  <div><label style="font-size:11px">Badge No.</label><input type="text" placeholder="Badge" data-r="c-file"></div>
+  <div><label style="font-size:11px">Company</label><input type="text" placeholder="Company" data-r="c-co"></div>
+  <div><label style="font-size:11px">Location</label><select data-r="c-loc"><option value="">--</option>${lo}</select></div>
+  <div><button class="btn btn-sm btn-danger" onclick="document.getElementById('${id}').remove()">X</button></div>`;
+  document.getElementById('contractor-list').appendChild(d);
+}
+function getSlots(){
+  const sh=document.getElementById('shift-type').value||'Day';
+  const st=sh==='Day'?6:18, step=intv==='2h'?2:4, s=[];
+  for(let i=0;i<12/step;i++){const h1=(st+i*step)%24,h2=(st+(i+1)*step)%24,f=h=>(h<10?'0':'')+h+':00';s.push(f(h1)+'-'+f(h2));}
+  return s;
+}
+function buildBlock(cid,fields){
+  const c=document.getElementById(cid);c.innerHTML='';
+  const slots=getSlots();
+  const hdr=document.createElement('div');
+  hdr.style.cssText='display:grid;grid-template-columns:repeat('+slots.length+',1fr);gap:4px;margin-bottom:8px';
+  slots.forEach(s=>{const sp=document.createElement('div');sp.className='slot-header';sp.textContent=s;hdr.appendChild(sp);});
+  c.appendChild(hdr);
+  fields.forEach(f=>{
+    const w=document.createElement('div');w.style.marginBottom='8px';
+    const l=document.createElement('div');l.style.cssText='font-size:11px;font-weight:600;color:#4a5568;margin-bottom:4px';l.textContent=f.label+' ('+f.unit+')';w.appendChild(l);
+    const g=document.createElement('div');g.style.cssText='display:grid;grid-template-columns:repeat('+slots.length+',1fr);gap:4px';
+    slots.forEach((_,i)=>{const inp=document.createElement('input');inp.type='number';inp.step='0.01';inp.placeholder='--';inp.style.cssText='text-align:center;font-size:12px;padding:5px 4px';inp.setAttribute('data-fld',cid+'_'+f.key+'_'+i);g.appendChild(inp);});
+    w.appendChild(g);c.appendChild(w);
+  });
+}
+function setIntv(v){
+  intv=v;
+  document.getElementById('i2').className='rpill'+(v==='2h'?' sel-blue':'');
+  document.getElementById('i4').className='rpill'+(v==='4h'?' sel-blue':'');
+  rebuildReadings();
+}
+function rebuildReadings(){
+  const iF=[{key:'volt',label:'Voltage',unit:'kV'},{key:'curr',label:'Current',unit:'A'},{key:'pwr',label:'Active Power',unit:'MW'},{key:'freq',label:'Frequency',unit:'Hz'}];
+  const lF=[{key:'curr',label:'Current',unit:'A'},{key:'load',label:'Load',unit:'kW'}];
+  buildBlock('inc1',iF);buildBlock('inc2',iF);
+  buildBlock('lp1',lF);buildBlock('lp2',lF);buildBlock('lp3',lF);
+}
+function collectRdg(cid){const d={};document.querySelectorAll('[data-fld^="'+cid+'_"]').forEach(i=>{d[i.getAttribute('data-fld').replace(cid+'_','')]=i.value||null;});return d;}
+function saveConfig(){
+  const url=document.getElementById('cfg-url').value.trim();
+  localStorage.setItem(CK,JSON.stringify({url}));
+  updateCfgStatus(url);
+}
+function updateCfgStatus(url){
+  const el=document.getElementById('cfg-status');
+  el.innerHTML=url?'<span style="color:#27ae60">Connected: Google Sheet URL configured.</span>':'<span style="color:#e74c3c">No URL set -- submissions save locally only.</span>';
+}
+function getUrl(){return (JSON.parse(localStorage.getItem(CK)||'{}')).url||'';}
+
+async function submitSection(){
+  const file=document.getElementById('self-name').value;
+  if(!file){alert('Please select your name.');return;}
+  if(!document.getElementById('shift-date').value){alert('Please enter shift date.');return;}
+  if(!document.getElementById('shift-type').value){alert('Please select shift type.');return;}
+  if(!document.getElementById('att-location').value){alert('Please select your work location.');return;}
+  if(!document.getElementById('att-shift').value){alert('Please select your shift.');return;}
+  const btn=document.getElementById('submit-btn');
+  btn.innerHTML='<span class="spinner"></span> Sending...';btn.disabled=true;
+  const p=ROSTER.find(r=>r.file===file)||{};
+  const data={
+    id:Date.now(),timestamp:new Date().toISOString(),
+    submittedBy:{name:p.name||'',file:file,desig:p.desig||''},
+    shiftDate:document.getElementById('shift-date').value,
+    shiftType:document.getElementById('shift-type').value,
+    weather:document.getElementById('weather').value,
+    attendance:{name:p.name||'',file:file,desig:p.desig||'',location:document.getElementById('att-location').value,shift:document.getElementById('att-shift').value,type:'Staff'},
+    contractors:Array.from(document.querySelectorAll('.contractor-row')).map(el=>({name:el.querySelector('[data-r="c-name"]').value,file:el.querySelector('[data-r="c-file"]').value,company:el.querySelector('[data-r="c-co"]').value,location:el.querySelector('[data-r="c-loc"]').value,type:'Contractor'})).filter(c=>c.name),
+    systemStatus:document.getElementById('sys-status').value,
+    hasFault:document.querySelector('input[name="r-fault"]:checked').value,
+    sysNotes:document.getElementById('sys-notes').value,
+    faults:Array.from(document.querySelectorAll('.fault-row')).map(el=>({location:el.querySelector('[data-r="f-loc"]').value,type:el.querySelector('[data-r="f-type"]').value,time:el.querySelector('[data-r="f-time"]').value})),
+    faultActions:document.getElementById('fault-actions').value,
+    hasAlarm:document.querySelector('input[name="r-alarm"]:checked').value,
+    alarms:Array.from(document.querySelectorAll('.alarm-row')).map(el=>({location:el.querySelector('[data-r="a-loc"]').value,desc:el.querySelector('[data-r="a-desc"]').value,severity:el.querySelector('[data-r="a-sev"]').value,time:el.querySelector('[data-r="a-time"]').value})),
+    interval:intv,
+    inc1:collectRdg('inc1'),inc2:collectRdg('inc2'),
+    lp1:collectRdg('lp1'),lp2:collectRdg('lp2'),lp3:collectRdg('lp3'),
+    rdgNotes:document.getElementById('rdg-notes').value,
+    hse:{tbt:document.querySelector('input[name="r-tbt"]:checked').value,tbtTopic:document.getElementById('tbt-topic').value,incident:document.querySelector('input[name="r-inc"]:checked').value,nearMiss:document.querySelector('input[name="r-nm"]:checked').value,incDetail:document.getElementById('inc-detail').value,safeMH:document.getElementById('safe-mh').value,ptw:document.getElementById('ptw').value,ppe:document.getElementById('ppe').value,notes:document.getElementById('hse-notes').value},
+    handoverNotes:document.getElementById('handover-notes').value,
+    handoverReceiver:document.getElementById('handover-receiver').value
+  };
+  reports.unshift(data);
+  localStorage.setItem(SK,JSON.stringify(reports));
+  document.getElementById('rpt-count').textContent=reports.length;
+  const url=getUrl();
+  if(url){
+    try{
+      const flat={timestamp:data.timestamp,shiftDate:data.shiftDate,shiftType:data.shiftType,weather:data.weather,submittedBy_name:data.submittedBy.name,submittedBy_file:data.submittedBy.file,submittedBy_desig:data.submittedBy.desig,att_name:data.attendance.name,att_file:data.attendance.file,att_desig:data.attendance.desig,att_location:data.attendance.location,att_shift:data.attendance.shift,att_type:data.attendance.type,contractors:JSON.stringify(data.contractors),systemStatus:data.systemStatus,hasFault:data.hasFault,sysNotes:data.sysNotes,faults:JSON.stringify(data.faults),faultActions:data.faultActions,hasAlarm:data.hasAlarm,alarms:JSON.stringify(data.alarms),interval:data.interval,inc1:JSON.stringify(data.inc1),inc2:JSON.stringify(data.inc2),lp1:JSON.stringify(data.lp1),lp2:JSON.stringify(data.lp2),lp3:JSON.stringify(data.lp3),rdgNotes:data.rdgNotes,hse_tbt:data.hse.tbt,hse_tbtTopic:data.hse.tbtTopic,hse_incident:data.hse.incident,hse_nearMiss:data.hse.nearMiss,hse_incDetail:data.hse.incDetail,hse_safeMH:data.hse.safeMH,hse_ptw:data.hse.ptw,hse_ppe:data.hse.ppe,hse_notes:data.hse.notes,handoverNotes:data.handoverNotes,handoverReceiver:data.handoverReceiver};
+      await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(flat)});
+      showBanner('success');
+    }catch(e){showBanner('error');}
+  } else { showBanner('success'); }
+  btn.innerHTML='&#10148; Submit My Section';btn.disabled=false;
+  resetForm();
+}
+function showBanner(t){
+  const s=document.getElementById('banner-success'),e=document.getElementById('banner-error');
+  s.style.display='none';e.style.display='none';
+  if(t==='success') s.style.display='block'; else e.style.display='block';
+  setTimeout(()=>{s.style.display='none';e.style.display='none';},5000);
+}
+function resetForm(){
+  ['self-name','att-location','att-shift','shift-type'].forEach(id=>document.getElementById(id).value='');
+  ['self-file','self-desig','att-name','att-file'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('shift-date').value=new Date().toISOString().split('T')[0];
+  ['sys-notes','fault-actions','rdg-notes','hse-notes','inc-detail','tbt-topic','safe-mh','ptw','handover-notes','handover-receiver'].forEach(id=>document.getElementById(id).value='');
+  ['fault-list','alarm-list','contractor-list'].forEach(id=>document.getElementById(id).innerHTML='');
+  document.getElementById('fault-sec').style.display='none';
+  document.getElementById('alarm-sec').style.display='none';
+  document.getElementById('inc-detail-block').style.display='none';
+  rebuildReadings();
+}
+function renderHistory(){
+  const q=(document.getElementById('srch').value||'').toLowerCase();
+  const fs=document.getElementById('flt-shift').value;
+  const list=document.getElementById('history-list');
+  const filtered=reports.filter(r=>(!q||[r.shiftDate,r.shiftType,r.submittedBy?.name,r.systemStatus].join(' ').toLowerCase().includes(q))&&(!fs||r.shiftType===fs));
+  if(!filtered.length){list.innerHTML='<div class="empty-state">No submissions found.</div>';return;}
+  const groups={};
+  filtered.forEach(r=>{const k=r.shiftDate+'|'+r.shiftType;if(!groups[k])groups[k]=[];groups[k].push(r);});
+  list.innerHTML=Object.entries(groups).sort((a,b)=>b[0].localeCompare(a[0])).map(([key,entries])=>{
+    const [date,shift]=key.split('|');
+    const sc=shift==='Day'?'tag-day':'tag-night';
+    const hF=entries.some(e=>e.hasFault==='Yes');
+    const hI=entries.some(e=>e.hse?.incident==='Yes');
+    const hN=entries.some(e=>e.hse?.nearMiss==='Yes');
+    const mh=entries.reduce((s,e)=>s+(parseInt(e.hse?.safeMH)||0),0);
+    const allAtt=[...entries.map(e=>e.attendance).filter(a=>a?.name),...entries.flatMap(e=>e.contractors||[]).filter(c=>c.name)];
+    const rows=allAtt.map(a=>`<tr><td>${a.name}</td><td style="font-family:monospace;font-size:11px">${a.file||'--'}</td><td>${a.desig||a.company||'--'}</td><td>${a.location||'--'}</td><td><span class="tag ${a.shift==='Day Shift'?'tag-day':'tag-night'}" style="font-size:10px">${a.shift||'--'}</span></td><td><span class="tag ${a.type==='Staff'?'tag-staff':'tag-cont'}" style="font-size:10px">${a.type||'--'}</span></td></tr>`).join('');
+    const fList=entries.flatMap(e=>e.faults||[]).filter(f=>f.location).map(f=>f.location+' ('+f.type+' @ '+f.time+')').join('; ');
+    const aList=entries.flatMap(e=>e.alarms||[]).filter(a=>a.location).map(a=>a.location+' -- '+a.desc+' ['+a.severity+']').join('; ');
+    return `<div class="report-card">
+      <div class="report-meta">
+        <strong style="font-size:15px">${date}</strong>
+        <span class="tag ${sc}">${shift} Shift</span>
+        ${hF?'<span class="tag tag-fault">Fault</span>':'<span class="tag tag-ok">No Fault</span>'}
+        ${hI?'<span class="tag tag-fault">Incident</span>':''}
+        ${hN?'<span class="tag" style="background:#fff3e0;color:#7d4f00;border-color:#f39c12">Near Miss</span>':''}
+        <span style="font-size:11px;color:#6b7a8d;margin-left:auto">${entries.length} submission(s)</span>
+      </div>
+      <div class="report-detail">
+        <strong>Submitted by:</strong> ${entries.map(e=>e.submittedBy?.name).filter(Boolean).join(', ')}<br>
+        <strong>Status:</strong> ${entries.find(e=>e.systemStatus)?.systemStatus||'--'} | <strong>Weather:</strong> ${entries.find(e=>e.weather)?.weather||'--'}<br>
+        ${fList?'<strong>Faults:</strong> '+fList+'<br>':''}
+        ${aList?'<strong>Alarms:</strong> '+aList+'<br>':''}
+        <strong>Safe Man-Hours:</strong> ${mh||'--'} | <strong>PPE:</strong> ${entries.find(e=>e.hse?.ppe)?.hse?.ppe||'--'}
+      </div>
+      ${allAtt.length?`<div style="margin-top:12px;overflow-x:auto"><table class="att-table"><thead><tr><th>Name</th><th>File No.</th><th>Designation / Company</th><th>Location</th><th>Shift</th><th>Type</th></tr></thead><tbody>${rows}</tbody></table></div>`:''}
+      ${entries.find(e=>e.handoverNotes)?`<div style="margin-top:10px;padding:8px 12px;background:#f5f8fc;border-radius:6px;font-size:12px"><strong>Handover:</strong> ${entries.find(e=>e.handoverNotes).handoverNotes}</div>`:''}
+    </div>`;
+  }).join('');
+}
+function exportJSON(){
+  const b=new Blob([JSON.stringify(reports,null,2)],{type:'application/json'});
+  const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='mv_shift_'+new Date().toISOString().split('T')[0]+'.json';a.click();
+}
+function clearAll(){
+  if(!confirm('Delete ALL locally saved submissions?')) return;
+  reports=[];localStorage.setItem(SK,JSON.stringify(reports));
+  document.getElementById('rpt-count').textContent=0;renderHistory();
+}
+</script>
+</body>
+</html>
