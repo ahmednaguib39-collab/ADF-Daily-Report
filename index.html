@@ -520,9 +520,9 @@ function saveConfig(){
 }
 function updateCfgStatus(url){
   const el=document.getElementById('cfg-status');
-  el.innerHTML=url?'<span style="color:#27ae60">Connected: Google Sheet URL configured.</span>':'<span style="color:#e74c3c">No URL set -- submissions save locally only.</span>';
+  el.innerHTML='<span style="color:#27ae60">&#10003; Pre-configured: Google Sheet URL is hardcoded. All devices connect automatically.</span>';
 }
-function getUrl(){return (JSON.parse(localStorage.getItem(CK)||'{}')).url||'';}
+function getUrl(){ return 'https://script.google.com/macros/s/AKfycbzlyFtGxoJSFqn1BXKjnJtv3jjaB_NtotMFgjosE4ScIFJDn5Sn6Hn-igFSHL6IwlGA/exec'; }
 
 async function submitSection(){
   const file=document.getElementById('self-name').value;
